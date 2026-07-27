@@ -1,0 +1,12 @@
+{
+  "name": "growth-league",
+  "version": "1.0.0",
+  "description": "Growth Champions League",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
