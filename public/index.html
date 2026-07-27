@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لیگ قهرمانان رشد</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --gold: #FFD700;
+            --gold-dark: #B8860B;
+            --bg-dark: #05050a;
+            --glass: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 215, 0, 0.1);
+        }
+        * { font-family: 'Vazirmatn', sans-serif; box-sizing: border-box; }
+        body { background-color: var(--bg-dark); color: #fff; margin: 0; min-height: 100vh; overflow-x: hidden; }
+        
+        /* بک‌گراند متحرک درخشان */
+        .bg-glow {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden;
+        }
+        .glow-circle {
+            position: absolute; border-radius: 50%; filter: blur(100px); opacity: 0.15;
+        }
+        .circle-1 { width: 600px; height: 600px; background: var(--gold); top: -200px; right: -200px; animation: float 10s infinite ease-in-out; }
+        .circle-2 { width: 500px; height: 500px; background: #4a4a4a; bottom: -100px; left: -100px; animation: float 12s infinite ease-in-out reverse; }
+        
+        @keyframes float { 0%, 100% { transform: translate(0, 0); } 50% { transform: translate(50px, 30px); } }
+
+        .gold-text { color: var(--gold); }
+        .glass-card { background: var(--glass); border: 1px solid var(--glass-border); backdrop-filter: blur(15px); border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.4); }
+        
+        /* دکمه‌های گلدیز */
+        .btn-gold {
+            background: linear-gradient(45deg, var(--gold), var(--gold-dark));
+            color: #000; font-weight: 800; padding: 12px 25px; border-radius: 12px; border: none; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+        }
+        .btn-gold:hover { transform: translateY(-2px); box-shadow: 0 5px 25px rgba(255, 215, 0, 0.5); }
+        .btn-gold:active { transform: scale(0.98); }
+        
+        .btn-outline {
+            background: transparent; border: 1px solid rgba(255,215,0,0.3); color: var(--gold); font-weight: 700; padding: 10px 20px; border-radius: 12px; cursor: pointer; transition: 0.3s;
+        }
+        .btn-outline:hover { background: rgba(255,215,0,0.1); border-color: var(--gold); }
+
+        /* اینپوت‌ها */
+        .neo-input {
+            width: 100%; padding: 15px; margin: 10px 0; background: rgba(0,0,0,0.4); border: 1px solid #333; border-radius: 12px; color: #fff; font-size: 1rem; transition: 0.3s;
+        }
+        .neo-input:focus { border-color: var(--gold); box-shadow: 0 0 15px rgba(255,215,0,0.1); outline: none; }
+
+        /* نردبان رشد */
+        .ladder-container { position: relative; padding: 20px 0; }
+        .ladder-line { position: absolute; right: 39px; top: 40px; bottom: 40px; width: 4px; background: #222; border-radius: 2px; }
+        .ladder-step { display: flex; align-items: center; gap: 20px; margin-bottom: 40px; position: relative; z-index: 2; transition: 0.4s; }
+        .step-icon {
+            width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 2rem; background: #111; border: 3px solid #333; color: #555; flex-shrink: 0; transition: 0.4s;
+        }
+        .step-content { background: var(--glass); border: 1px solid #222; padding: 15px 20px; border-radius: 16px; flex: 1; backdrop-filter: blur(5px); transition: 0.4s; }
+        .step-title { font-weight: 800; font-size: 1.2rem; margin-bottom: 5px; }
+        .step-desc { font-size: 0.9rem; color: #888; }
+        
+        .ladder-step.active .step-icon { background: linear-gradient(135deg, var(--gold), var(--gold-dark)); color: #000; border-color: var(--gold); box-shadow: 0 0 30px var(--gold); transform: scale(1.1); }
+        .ladder-step.active .step-content { border-color: var(--gold); background: rgba(255, 215, 0, 0.05); }
+        .ladder-step.active .step-title { color: var(--gold); }
+        .ladder-step.done .step-icon { background: #222; color: #555; border-color: #444; }
+        .ladder-step.done .step-icon i { color: #0aff00; }
+
+        /* جدول رتبه‌بندی */
+        .rank-row { display: flex; align-items: center; padding: 15px; background: var(--glass); border: 1px solid #222; border-radius: 16px; margin-bottom: 10px; transition: 0.3s; }
+        .rank-row:hover { border-color: var(--gold); transform: translateX(-5px); }
+        .rank-avatar { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; margin-left: 15px; font-size: 1.2rem; }
+        
+        .anim-pop { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.8); } 100% { opacity: 1; transform: scale(1); } }
+        
+        .hidden { display: none !important; }
+        
+        /* نوار ناوبری تب‌ها */
+        .tab-nav { display: flex; gap: 10px; justify-content: center; margin-bottom: 30px; flex-wrap: wrap; }
+        .tab-btn { padding: 10px 20px; border-radius: 12px; cursor: pointer; color: #888; background: var(--glass); border: 1px solid #222; transition: 0.3s; font-weight: 600; }
+        .tab-btn.active { background: linear-gradient(45deg, var(--gold), var(--gold-dark)); color: #000; border-color: var(--gold); box-shadow: 0 0 15px rgba(255,215,0,0.3); }
+        
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #0a0a12; }
+        ::-webkit-scrollbar-thumb { background: var(--gold-dark); border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="bg-glow">
+        <div class="glow-circle circle-1"></div>
+        <div class="glow-circle circle-2"></div>
+    </div>
+
+    <!-- صفحه ورود -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full p-10 text-center anim-pop">
+            <div class="w-24 h-24 mx-auto mb-6 rounded-full flex items-center justify-center text-5xl" style="background: linear-gradient(135deg, var(--gold), var(--gold-dark)); box-shadow: 0 0 40px var(--gold);">
+                <i class="fas fa-trophy text-black"></i>
+            </div>
+            <h1 class="text-4xl font-black gold-text mb-3">لیگ قهرمانان رشد</h1>
+            <p class="text-gray-400 mb-8">برای مشاهده امتیازات و مسیر قهرمانی وارد شوید</p>
+            
+            <input type="text" id="login-user" class="neo-input text-center" placeholder="نام کاربری (انگلیسی)">
+            <input type="password" id="login-pass" class="neo-input text-center" placeholder="رمز عبور" onkeydown="if(event.key==='Enter')doLogin()">
+            <button class="btn-gold w-full text-lg" style="padding: 15px;" onclick="doLogin()">ورود به لیگ <i class="fas fa-arrow-left mr-2"></i></button>
+        </div>
+    </div>
+
+    <!-- پنل اصلی -->
+    <div id="main-panel" class="hidden max-w-5xl mx-auto p-4 md:p-8 pb-20">
+        <!-- هدر -->
+        <div class="flex justify-between items-center mb-10 flex-wrap gap-4">
+            <h1 class="text-3xl font-black gold-text flex items-center gap-3"><i class="fas fa-trophy"></i> لیگ قهرمانان رشد</h1>
+            <div class="flex items-center gap-3">
+                <div class="glass-card px-5 py-3 flex items-center gap-3">
+                    <i class="fas fa-coins gold-text"></i>
+                    <div>
+                        <div class="text-xs text-gray-400">امتیاز شما</div>
+                        <div class="text-xl font-black gold-text" id="my-points">0</div>
+                    </div>
+                </div>
+                <button class="btn-outline" onclick="logout()"><i class="fas fa-sign-out-alt"></i></button>
+            </div>
+        </div>
+
+        <!-- نوار ناوبری -->
+        <div class="tab-nav">
+            <div class="tab-btn active" onclick="showSection('dashboard', this)"><i class="fas fa-chart-line ml-1"></i> داشبورد</div>
+            <div class="tab-btn" onclick="showSection('ladder', this)"><i class="fas fa-stairs ml-1"></i> نردبان رشد</div>
+            <div class="tab-btn" onclick="showSection('leaderboard', this)"><i class="fas fa-medal ml-1"></i> رتبه‌بندی</div>
+            <div class="tab-btn" onclick="showSection('messages', this)"><i class="fas fa-envelope ml-1"></i> پیام به استاد</div>
+            <div class="tab-btn hidden" id="admin-nav" onclick="showSection('admin', this)" style="color:#FFD700; border-color:#FFD700;"><i class="fas fa-user-shield ml-1"></i> پنل مدیریت</div>
+        </div>
+
+        <!-- ۱. داشبورد -->
+        <div id="section-dashboard" class="glass-card p-8 anim-pop">
+            <div id="user-status-box" class="text-center"></div>
+        </div>
+
+        <!-- ۲. نردبان رشد -->
+        <div id="section-ladder" class="hidden glass-card p-8 anim-pop">
+            <h2 class="text-2xl font-bold mb-8 text-center gold-text">مسیر قهرمانی شما</h2>
+            <div class="ladder-container" id="ladder-box">
+                <div class="ladder-line"></div>
+            </div>
+        </div>
+
+        <!-- ۳. رتبه‌بندی -->
+        <div id="section-leaderboard" class="hidden glass-card p-8 anim-pop">
+            <h2 class="text-2xl font-bold mb-6 text-center gold-text">جدول برترین‌ها</h2>
+            <div id="leaderboard-body"></div>
+        </div>
+
+        <!-- ۴. پیام‌ها -->
+        <div id="section-messages" class="hidden glass-card p-8 anim-pop">
+            <h2 class="text-2xl font-bold mb-6 gold-text"><i class="fas fa-envelope-open-text ml-2"></i> ارسال پیام به خانم زینب</h2>
+            <textarea id="msg-text" rows="4" class="neo-input" placeholder="پیام خود را اینجا بنویسید..."></textarea>
+            <button class="btn-gold mt-2" onclick="sendMessage()"><i class="fas fa-paper-plane ml-2"></i> ارسال پیام</button>
+        </div>
+
+        <!-- ۵. پنل ادمین -->
+        <div id="section-admin" class="hidden space-y-6">
+            <div class="glass-card p-8 anim-pop">
+                <h2 class="text-2xl font-bold mb-6 text-center gold-text"><i class="fas fa-award ml-2"></i> مدیریت امتیازات</h2>
+                <div class="flex gap-2 flex-col md:flex-row">
+                    <select id="admin-user-select" class="neo-input flex-1" style="margin:0;"></select>
+                    <input type="number" id="admin-points-input" class="neo-input md:w-1/3" style="margin:0;" placeholder="امتیاز (مثلا 50)">
+                    <button class="btn-gold" onclick="addPoints()"><i class="fas fa-plus"></i> ثبت</button>
+                </div>
+            </div>
+            
+            <div class="glass-card p-8 anim-pop">
+                <h2 class="text-2xl font-bold mb-6 text-center gold-text"><i class="fas fa-user-plus ml-2"></i> افزودن دانش‌آموز جدید</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="new-user-display" class="neo-input" style="margin:0;" placeholder="نام نمایشی (فارسی)">
+                    <input type="text" id="new-user-username" class="neo-input" style="margin:0;" placeholder="نام کاربری (انگلیسی)">
+                </div>
+                <button class="btn-gold mt-4 w-full" onclick="addNewUser()"><i class="fas fa-check"></i> ثبت کاربر جدید</button>
+            </div>
+
+            <div class="glass-card p-8 anim-pop">
+                <h2 class="text-2xl font-bold mb-6 text-center gold-text"><i class="fas fa-inbox ml-2"></i> صندوق پیام‌ها</h2>
+                <div id="admin-messages-box" class="space-y-4"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // === متغیرهای سراسری ===
+    let currentUser = null;
+    let dbData = { users: [], messages: [] };
+
+    // === توابع دیتابیس ===
+    async function fetchDB() {
+        const res = await fetch('/api/db');
+        dbData = await res.json();
+        if(!dbData.users) dbData.users = [];
+        if(!dbData.messages) dbData.messages = [];
+    }
+    async function saveDB() {
+        await fetch('/api/db', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dbData) });
+    }
+
+    // === احراز هویت ===
+    function doLogin() {
+        const u = document.getElementById('login-user').value.trim().toLowerCase();
+        const p = document.getElementById('login-pass').value;
+        const user = dbData.users.find(x => x.username === u && x.password === p);
+        
+        if(user) {
+            currentUser = user;
+            document.getElementById('login-screen').classList.add('hidden');
+            document.getElementById('main-panel').classList.remove('hidden');
+            if(u === 'zeynab') document.getElementById('admin-nav').classList.remove('hidden');
+            renderUI();
+        } else {
+            alert('نام کاربری یا رمز عبور اشتباه است!');
+        }
+    }
+    function logout() { currentUser = null; location.reload(); }
+
+    // === رندر بخش‌ها ===
+    function showSection(id, el) {
+        document.querySelectorAll('.tab-btn').forEach(e => e.classList.remove('active'));
+        if(el) el.classList.add('active');
+        document.querySelectorAll('#main-panel > div.glass-card, #main-panel > div#section-admin').forEach(e => e.classList.add('hidden'));
+        const sec = document.getElementById('section-' + id);
+        if(sec) { sec.classList.remove('hidden'); sec.classList.add('anim-pop'); }
+    }
+
+    function renderUI() {
+        document.getElementById('my-points').textContent = currentUser.points || 0;
+        renderDashboard();
+        renderLadder();
+        renderLeaderboard();
+        if(currentUser.username === 'zeynab') renderAdminPanel();
+    }
+
+    function renderDashboard() {
+        const stages = [
+            { min: 0, max: 49, name: 'مرحله شروع', icon: 'fa-seedling', color: '#8BC34A', next: 50 },
+            { min: 50, max: 149, name: 'مرحله کاوش', icon: 'fa-search', color: '#03A9F4', next: 150 },
+            { min: 150, max: 299, name: 'مرحله پیشرفت', icon: 'fa-chart-line', color: '#FF9800', next: 300 },
+            { min: 300, max: 499, name: 'مرحله درخشش', icon: 'fa-star', color: '#E91E63', next: 500 },
+            { min: 500, max: 99999, name: 'قله قهرمانی', icon: 'fa-trophy', color: '#FFD700', next: null }
+        ];
+        const p = currentUser.points || 0;
+        const stage = stages.find(s => p >= s.min && p <= s.max) || stages[0];
+        
+        let progressHtml = '';
+        if(stage.next) {
+            const progressPercent = Math.min(100, ((p - stage.min) / (stage.next - stage.min)) * 100);
+            progressHtml = `
+                <div class="mt-8 max-w-md mx-auto">
+                    <div class="flex justify-between text-sm mb-2 text-gray-400">
+                        <span>پیشرفت تا مرحله بعد</span>
+                        <span>${stage.next - p} امتیاز مانده</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-4 overflow-hidden border border-gray-700">
+                        <div class="h-full rounded-full transition-all duration-1000" style="width: ${progressPercent}%; background: linear-gradient(90deg, ${stage.color}, #FFD700);"></div>
+                    </div>
+                </div>`;
+        }
+        
+        document.getElementById('user-status-box').innerHTML = `
+            <div class="w-32 h-32 mx-auto rounded-full flex items-center justify-center text-6xl mb-6" style="background: rgba(255,255,255,0.05); border: 3px solid ${stage.color}; box-shadow: 0 0 40px ${stage.color}40;">
+                <i class="fas ${stage.icon}" style="color: ${stage.color};"></i>
+            </div>
+            <h3 class="text-3xl font-black mb-2">${stage.name}</h3>
+            <p class="text-gray-400">امتیاز فعلی شما: <b class="text-xl gold-text">${p}</b></p>
+            ${progressHtml}
+        `;
+    }
+
+    function renderLadder() {
+        const stages = [
+            { min: 0, max: 49, name: 'مرحله ۱: شروع', desc: 'شروع سفر رشد (۰ تا ۵۰ امتیاز)', icon: 'fa-seedling' },
+            { min: 50, max: 149, name: 'مرحله ۲: کاوش', desc: 'کاوش و کشف توانمندی‌ها (۵۰ تا ۱۵۰)', icon: 'fa-search' },
+            { min: 150, max: 299, name: 'مرحله ۳: پیشرفت', desc: 'پیشرفت مستمر (۱۵۰ تا ۳۰۰)', icon: 'fa-chart-line' },
+            { min: 300, max: 499, name: 'مرحله ۴: درخشش', desc: 'درخشش در مسیر قهرمانی (۳۰۰ تا ۵۰۰)', icon: 'fa-star' },
+            { min: 500, max: 99999, name: 'مرحله ۵: قهرمان', desc: 'رسیدن به قله قهرمانان (۵۰۰ به بالا)', icon: 'fa-trophy' }
+        ];
+        const p = currentUser.points || 0;
+        const html = stages.map(s => {
+            let cls = '';
+            if(p >= s.min && p <= s.max) cls = 'active';
+            else if(p > s.max) cls = 'done';
+            
+            return `<div class="ladder-step ${cls}">
+                <div class="step-icon"><i class="fas ${cls === 'done' ? 'fa-check' : s.icon}"></i></div>
+                <div class="step-content">
+                    <div class="step-title">${s.name}</div>
+                    <div class="step-desc">${s.desc}</div>
+                </div>
+            </div>`;
+        }).join('');
+        document.getElementById('ladder-box').innerHTML = '<div class="ladder-line"></div>' + html;
+    }
+
+    function renderLeaderboard() {
+        const sorted = [...dbData.users].filter(u => u.username !== 'zeynab').sort((a,b) => (b.points||0) - (a.points||0));
+        const colors = ['#FFD700', '#C0C0C0', '#CD7F32', '#333', '#333', '#333'];
+        
+        const html = sorted.map((u, i) => {
+            const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
+            const color = colors[i] || '#333';
+            const initial = u.displayName.charAt(0);
+            return `<div class="rank-row">
+                <div class="text-2xl font-black w-12 text-center" style="color:${color === '#333' ? '#fff' : color};">${rank}</div>
+                <div class="rank-avatar" style="background:linear-gradient(135deg, ${color}, #000); color:#fff;">${initial}</div>
+                <div class="flex-1">
+                    <div class="font-bold">${u.displayName}</div>
+                </div>
+                <div class="text-xl font-black gold-text">${u.points || 0} <span class="text-sm text-gray-400">امتیاز</span></div>
+            </div>`;
+        }).join('');
+        document.getElementById('leaderboard-body').innerHTML = html;
+    }
+
+    // === پیام‌رسان ===
+    async function sendMessage() {
+        const text = document.getElementById('msg-text').value.trim();
+        if(!text) return;
+        dbData.messages.push({ id: Date.now(), from: currentUser.username, fromName: currentUser.displayName, text: text, reply: null });
+        await saveDB();
+        document.getElementById('msg-text').value = '';
+        alert('پیام شما با موفقیت برای خانم زینب ارسال شد.');
+    }
+
+    // === پنل ادمین ===
+    function renderAdminPanel() {
+        const users = dbData.users.filter(u => u.username !== 'zeynab');
+        document.getElementById('admin-user-select').innerHTML = users.map(u => `<option value="${u.username}">${u.displayName}</option>`).join('');
+        
+        const msgs = dbData.messages || [];
+        document.getElementById('admin-messages-box').innerHTML = msgs.length === 0 ? '<p class="text-center text-gray-500 py-8">پیامی وجود ندارد.</p>' : msgs.map(m => `
+            <div class="bg-black/30 p-4 rounded-xl border border-gray-800">
+                <div class="flex justify-between items-center mb-2">
+                    <b class="gold-text"><i class="fas fa-user ml-1"></i> ${m.fromName}</b>
+                </div>
+                <p class="bg-white/5 p-3 rounded-lg mb-3">${m.text}</p>
+                ${m.reply ? `<div class="bg-yellow-500/10 p-3 rounded-lg border-r-4 border-yellow-500"><b>پاسخ شما:</b> ${m.reply}</div>` : `
+                <div class="flex gap-2 mt-2">
+                    <input type="text" id="reply-${m.id}" class="neo-input flex-1" style="margin:0;" placeholder="نوشتن پاسخ...">
+                    <button class="btn-gold" onclick="replyMsg(${m.id})">ارسال</button>
+                </div>`}
+            </div>
+        `).join('');
+    }
+    async function replyMsg(id) {
+        const inp = document.getElementById('reply-' + id);
+        const msg = dbData.messages.find(m => m.id === id);
+        if(msg && inp.value) {
+            msg.reply = inp.value;
+            await saveDB();
+            renderAdminPanel();
+        }
+    }
+    async function addPoints() {
+        const u = document.getElementById('admin-user-select').value;
+        const p = parseInt(document.getElementById('admin-points-input').value);
+        if(!u || isNaN(p)) return alert('دانش‌آموز و امتیاز رو درست وارد کن');
+        
+        const user = dbData.users.find(x => x.username === u);
+        user.points = (user.points || 0) + p;
+        await saveDB();
+        document.getElementById('admin-points-input').value = '';
+        alert('امتیاز با موفقیت ثبت شد.');
+        renderUI();
+    }
+    async function addNewUser() {
+        const disp = document.getElementById('new-user-display').value.trim();
+        const usr = document.getElementById('new-user-username').value.trim().toLowerCase();
+        if(!disp || !usr) return alert('هر دو فیلد رو پر کن');
+        if(dbData.users.find(u => u.username === usr)) return alert('این نام کاربری قبلا ثبت شده');
+        
+        dbData.users.push({ username: usr, password: usr + '123', displayName: disp, points: 0 });
+        await saveDB();
+        document.getElementById('new-user-display').value = '';
+        document.getElementById('new-user-username').value = '';
+        alert(`کاربر اضافه شد! رمز عبور دانش‌آموز: ${usr}123`);
+        renderUI();
+    }
+
+    // === شروع ===
+    window.onload = async function() { await fetchDB(); };
+    </script>
+</body>
+</html>
