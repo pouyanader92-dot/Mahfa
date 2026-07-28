@@ -165,12 +165,14 @@
 
         <!-- ۵. پنل ادمین -->
         <div id="section-admin" class="hidden space-y-6">
+            <!-- بخش مدیریت امتیاز (آپدیت شده با دکمه کم و زیاد) -->
             <div class="glass-card p-8 anim-pop">
                 <h2 class="text-2xl font-bold mb-6 text-center gold-text"><i class="fas fa-award ml-2"></i> مدیریت امتیازات</h2>
-                <div class="flex gap-2 flex-col md:flex-row">
+                <div class="flex gap-2 flex-col md:flex-row items-center">
                     <select id="admin-user-select" class="neo-input flex-1" style="margin:0;"></select>
-                    <input type="number" id="admin-points-input" class="neo-input md:w-1/3" style="margin:0;" placeholder="امتیاز (مثلا 50)">
-                    <button class="btn-gold" onclick="addPoints()"><i class="fas fa-plus"></i> ثبت</button>
+                    <input type="number" id="admin-points-input" class="neo-input md:w-1/3" style="margin:0;" placeholder="مقدار امتیاز">
+                    <button class="btn-gold" style="background: linear-gradient(45deg, #0aff00, #00cc00); color: #000;" onclick="updatePoints(1)"><i class="fas fa-plus"></i> افزایش</button>
+                    <button class="btn-gold" style="background: linear-gradient(45deg, #ff4d4d, #cc0000); color: #fff;" onclick="updatePoints(-1)"><i class="fas fa-minus"></i> کاهش</button>
                 </div>
             </div>
             
@@ -361,18 +363,26 @@
             renderAdminPanel();
         }
     }
-    async function addPoints() {
+    
+    // === تابع جدید برای کم و زیاد کردن امتیاز ===
+    async function updatePoints(action) {
         const u = document.getElementById('admin-user-select').value;
         const p = parseInt(document.getElementById('admin-points-input').value);
-        if(!u || isNaN(p)) return alert('دانش‌آموز و امتیاز رو درست وارد کن');
+        if(!u || isNaN(p) || p <= 0) return alert('دانش‌آموز رو انتخاب کن و یه عدد مثبت برای امتیاز وارد کن');
         
         const user = dbData.users.find(x => x.username === u);
-        user.points = (user.points || 0) + p;
+        if(!user) return;
+        
+        let newPoints = (user.points || 0) + (p * action);
+        if(newPoints < 0) newPoints = 0; // جلوگیری از منفی شدن امتیاز
+        
+        user.points = newPoints;
         await saveDB();
         document.getElementById('admin-points-input').value = '';
-        alert('امتیاز با موفقیت ثبت شد.');
+        alert('امتیاز با موفقیت بروزرسانی شد.');
         renderUI();
     }
+
     async function addNewUser() {
         const disp = document.getElementById('new-user-display').value.trim();
         const usr = document.getElementById('new-user-username').value.trim().toLowerCase();
