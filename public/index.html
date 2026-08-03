@@ -165,7 +165,7 @@
 
         <!-- ۵. پنل ادمین -->
         <div id="section-admin" class="hidden space-y-6">
-            <!-- بخش مدیریت امتیاز (آپدیت شده با دکمه کم و زیاد) -->
+            <!-- بخش مدیریت امتیاز -->
             <div class="glass-card p-8 anim-pop">
                 <h2 class="text-2xl font-bold mb-6 text-center gold-text"><i class="fas fa-award ml-2"></i> مدیریت امتیازات</h2>
                 <div class="flex gap-2 flex-col md:flex-row items-center">
@@ -255,7 +255,19 @@
         const stage = stages.find(s => p >= s.min && p <= s.max) || stages[0];
         
         let progressHtml = '';
-        if(stage.next) {
+        if(p < 0) {
+            progressHtml = `
+                <div class="mt-8 max-w-md mx-auto">
+                    <div class="flex justify-between text-sm mb-2 text-red-400">
+                        <span>هشدار</span>
+                        <span>امتیاز شما منفی است!</span>
+                    </div>
+                    <div class="w-full bg-gray-800 rounded-full h-4 overflow-hidden border border-gray-700">
+                        <div class="h-full rounded-full" style="width: 100%; background: #ff4d4d;"></div>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-2">برای رسیدن به مرحله اول به ${Math.abs(p)} امتیاز نیاز دارید.</p>
+                </div>`;
+        } else if(stage.next) {
             const progressPercent = Math.min(100, ((p - stage.min) / (stage.next - stage.min)) * 100);
             progressHtml = `
                 <div class="mt-8 max-w-md mx-auto">
@@ -270,11 +282,11 @@
         }
         
         document.getElementById('user-status-box').innerHTML = `
-            <div class="w-32 h-32 mx-auto rounded-full flex items-center justify-center text-6xl mb-6" style="background: rgba(255,255,255,0.05); border: 3px solid ${stage.color}; box-shadow: 0 0 40px ${stage.color}40;">
-                <i class="fas ${stage.icon}" style="color: ${stage.color};"></i>
+            <div class="w-32 h-32 mx-auto rounded-full flex items-center justify-center text-6xl mb-6" style="background: rgba(255,255,255,0.05); border: 3px solid ${p < 0 ? '#ff4d4d' : stage.color}; box-shadow: 0 0 40px ${p < 0 ? '#ff4d4d40' : stage.color + '40'};">
+                <i class="fas ${p < 0 ? 'fa-exclamation-triangle' : stage.icon}" style="color: ${p < 0 ? '#ff4d4d' : stage.color};"></i>
             </div>
-            <h3 class="text-3xl font-black mb-2">${stage.name}</h3>
-            <p class="text-gray-400">امتیاز فعلی شما: <b class="text-xl gold-text">${p}</b></p>
+            <h3 class="text-3xl font-black mb-2">${p < 0 ? 'امتیاز منفی' : stage.name}</h3>
+            <p class="text-gray-400">امتیاز فعلی شما: <b class="text-xl ${p < 0 ? 'text-red-400' : 'gold-text'}">${p}</b></p>
             ${progressHtml}
         `;
     }
@@ -312,13 +324,15 @@
             const rank = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1;
             const color = colors[i] || '#333';
             const initial = u.displayName.charAt(0);
+            const points = u.points || 0;
+            const isNegative = points < 0;
             return `<div class="rank-row">
                 <div class="text-2xl font-black w-12 text-center" style="color:${color === '#333' ? '#fff' : color};">${rank}</div>
                 <div class="rank-avatar" style="background:linear-gradient(135deg, ${color}, #000); color:#fff;">${initial}</div>
                 <div class="flex-1">
                     <div class="font-bold">${u.displayName}</div>
                 </div>
-                <div class="text-xl font-black gold-text">${u.points || 0} <span class="text-sm text-gray-400">امتیاز</span></div>
+                <div class="text-xl font-black ${isNegative ? 'text-red-400' : 'gold-text'}">${points} <span class="text-sm text-gray-400">امتیاز</span></div>
             </div>`;
         }).join('');
         document.getElementById('leaderboard-body').innerHTML = html;
@@ -364,7 +378,7 @@
         }
     }
     
-    // === تابع جدید برای کم و زیاد کردن امتیاز ===
+    // === تابع کم و زیاد کردن امتیاز (اجازه منفی شدن) ===
     async function updatePoints(action) {
         const u = document.getElementById('admin-user-select').value;
         const p = parseInt(document.getElementById('admin-points-input').value);
@@ -374,7 +388,7 @@
         if(!user) return;
         
         let newPoints = (user.points || 0) + (p * action);
-        if(newPoints < 0) newPoints = 0; // جلوگیری از منفی شدن امتیاز
+        // خط جلوگیری از منفی شدن حذف شد
         
         user.points = newPoints;
         await saveDB();
